@@ -3,35 +3,22 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 
-	"github.com/paij0se/cligpt/cli"
+	"github.com/drpaij0se/cligpt/cli"
 )
 
 type Data struct {
-	ID      string                 `json:"id"`
-	Object  string                 `json:"object"`
-	Created int                    `json:"created"`
-	Model   string                 `json:"model"`
-	Choices []TextCompletionChoice `json:"choices"`
-	Usage   TextCompletionUsage    `json:"usage"`
-}
-
-type TextCompletionChoice struct {
-	Text         string  `json:"text"`
-	Index        int     `json:"index"`
-	LogProbs     *string `json:"logprobs"`
-	FinishReason string  `json:"finish_reason"`
-}
-
-type TextCompletionUsage struct {
-	PromptTokens     int `json:"prompt_tokens"`
-	CompletionTokens int `json:"completion_tokens"`
-	TotalTokens      int `json:"total_tokens"`
+	Choices []struct {
+		Message struct {
+			Role    string `json:"role"`
+			Content string `json:"content"`
+		} `json:"message"`
+	} `json:"choices"`
 }
 
 func main() {
@@ -51,14 +38,10 @@ func main() {
 	client := &http.Client{}
 	var data = strings.NewReader(`{
 		  "model": "` + config["model"] + `",
-		  "prompt": "` + os.Args[1] + `",
-		  "temperature": 0.7,
-		  "max_tokens": ` + config["max_tokens"] + `,
-		  "top_p": 1,
-		  "frequency_penalty": 0,
-		  "presence_penalty": 0
+		  "messages": [{"role": "user", "content": "` + os.Args[1] + `"}],
+		  "temperature": 0.7
 		}`)
-	req, err := http.NewRequest("POST", "https://api.openai.com/v1/completions", data)
+	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", data)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -69,7 +52,7 @@ func main() {
 		log.Fatal("The token is valid?", err)
 	}
 	defer resp.Body.Close()
-	bodyText, err := ioutil.ReadAll(resp.Body)
+	bodyText, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,8 +61,5 @@ func main() {
 	if err != nil {
 		log.Println(err)
 	}
-	choice := response.Choices[0]
-	text := choice.Text
-	fmt.Println(text)
-	//fmt.Println(bodyText)
+	fmt.Println(response.Choices[0].Message.Content)
 }

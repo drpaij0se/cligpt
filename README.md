@@ -4,7 +4,7 @@
 
 Go 1.17+
 ```
-$ go install github.com/paij0se/cligpt@latest
+$ go install github.com/drpaij0se/cligpt@latest
 ```
 
 test
@@ -48,7 +48,7 @@ max_tokens: 256
 
 - Clone the repository.
 
-`$ git clone https://github.com/paij0se/cligpt`
+`$ git clone https://github.com/drpaij0se/cligpt`
 
 - Build the cli.
 
